@@ -5,6 +5,7 @@
   position: fixed;
   top: 0;
 }
+
 .modalContent {
   background: #fff;
   width: 80%;
@@ -15,17 +16,27 @@
 
 .img {
   width: 100%;
-  object-fit: cover;
-  object-position: center;
+  -o-object-fit: cover;
+     object-fit: cover;
+  -o-object-position: center;
+     object-position: center;
   border-radius: 12px;
 }
+
 .h-1 {
-  height: 400px;
-}
-.h-2{
   height: 150px;
 }
-.disabled{
+
+.h-60 {
+  height: 60%;
+}
+
+.disabled {
   pointer-events: none;
   color: lightgray;
 }
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+/*# sourceMappingURL=all.css.map */

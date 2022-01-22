@@ -37,7 +37,7 @@
                 <td>NT ${{ product.price }}</td>
                 <td>
                   <a href="#" class="btn" :class="{'btn-success': product.isAvailable, 'btn-light': !product.isAvailable }" @click.prevent="changeAvailable(product.id)"
-                    >{{product.isAvailable ? '啟用':'不啟用'}}</a
+                    >{{product.is_enabled ? '啟用':'不啟用'}}</a
                   >
                 </td>
                 <td>
@@ -53,7 +53,8 @@
           </tbody>
         </table>
       </div>
-<div></div>
+      <div>
+  </div>
       <!-- Modal -->
       <div class="backdrop" v-if="showModal">
         <div class="modalContent">
@@ -107,7 +108,7 @@
                         <span class="material-icons-outlined me-3">
                             shopping_cart
                         </span>
-                        <p v-if="temp.is_enabled >= 1">剩下 {{ temp.is_enabled }} / {{ temp.num }} {{temp.unit}} 可販售</p>
+                        <p v-if="temp.is_enabled">剩下 {{ temp.is_enabled }} / {{ temp.num }} {{temp.unit}} 可販售</p>
                         <p v-else>沒有庫存囉！目前尚有 {{temp.num}} {{temp.unit}} 未出貨</p>
                     </li>
                 </ul>

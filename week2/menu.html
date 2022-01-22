@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>week2 menu page</title>
+    <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0"
+    crossorigin="anonymous"
+  />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="./scss/all.css" />
+</head>
+<body>
+    <div id="app">
+        <header class="container d-flex align-items-center">
+            <div class='btn btn-outline-white text-white'>兩字</div>
+            <h1 class="text-center py-5 mx-auto">甜點商店後台</h1>
+            <button type="button" class="btn btn-outline-primary ms-auto" @click="logout">登出</button>
+        </header>
+        <div class="container">
+          <table class="table align-middle" v-if="!empty">
+            <thead>
+              <tr>
+                <th scope="col">產品名稱</th>
+                <th scope="col">原價</th>
+                <th scope="col">售價</th>
+                <th scope="col">是否啟用</th>
+                <th scope="col">查看細節</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="product in products" :key="product.id">
+                <tr :data-id="product.id">
+                  <th scope="row">{{ product.title }}</th>
+                  <td>NT ${{ product.origin_price }}</td>
+                  <td>NT ${{ product.price }}</td>
+                  <td>
+                    <a href="#" class="btn" :class="{'btn-success': product.is_enabled, 'btn-light': !product.is_enabled }" @click.prevent="changeEnabled(product.id)"
+                      >{{product.is_enabled ? '啟用':'不啟用'}}</a
+                    >
+                  </td>
+                  <td>
+                    <a
+                      href="#"
+                      class="btn btn-primary"
+                      @click.prevent="openModal(product)"
+                      >查看細節</a
+                    >
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <p class="text-center" v-else> 沒有商品呦～趕快來新增吧</p>
+        </div>
+        <div>
+    </div>
+        <!-- Modal -->
+        <div class="backdrop" v-if="showModal">
+          <div class="modalContent h-100">
+            <div class="modal-content h-100">
+              <div
+                class="modal-header position-sticky top-0 border-0 bg-white"
+                style="z-index: 1080"
+              >
+                  <button
+                  type="button"
+                  class="btn-close invisible"
+              ></button>
+                <h5 class="modal-title">{{temp.title}}</h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  @click.prevent="toggleModel"
+                ></button>
+              </div>
+              <div class="modal-body text-break overflow-y-auto">
+                  <div class="row mb-4 h-60">
+                      <div class="col-9 h-100">
+                          <div class="ratio-1x1 h-100">
+                              <img :src="temp.imageUrl" alt="cake img" class="img h-100" />
+                          </div>
+                      </div>
+                      <div class="col-3 my-auto h-100 overflow-y-auto">
+                          <div class="ratio-1x1 w-100" v-for="img in temp.imagesUrl" :key="img">
+                              <img :src="img" alt="cake img" class="img h-1 mb-2" />
+                          </div>
+                      </div>
+                  </div>
+                  <ul class="container mb-0">
+                      <li class="d-flex align-items-start mb-3">
+                          <span class="badge bg-warning fs-6 me-3">{{ temp.category }}</span> 
+                          <p class="mb-0 pe-5">{{ temp.description }}</p>
+                      </li>
+                      <li class="d-flex">
+                          <span class="material-icons-outlined me-3">
+                          cake
+                          </span>
+                          <p>{{ temp.content }}</p>
+                      </li>
+                      <li class="d-flex">
+                          <span class="material-icons-outlined me-3">
+                          local_offer
+                          </span>
+                          <p class="">NT <span class="text-decoration-line-through">${{ temp.origin_price }}</span> <span class="text-danger">${{temp.price}}</span> / {{temp.unit}}</p>
+                      </li>
+                      <li class="d-flex" :class="{'text-danger': !temp.is_enabled>=1}">
+                          <span class="material-icons-outlined me-3">
+                              shopping_cart
+                          </span>
+                          <p v-if="temp.is_enabled">剩下 {{ temp.is_enabled }} / {{ temp.num }} {{temp.unit}} 可販售</p>
+                          <p v-else>沒有庫存囉！目前尚有 {{temp.num}} {{temp.unit}} 未出貨</p>
+                      </li>
+                  </ul>
+              </div>
+              <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-primary" :data-id="temp.id">編輯</button>
+                <button type="button" class="btn btn-outline-danger" @click.prevent="deleteProduct(temp.id)">刪除</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+      <script type="module">
+        import { createApp } from "https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.26/vue.esm-browser.min.js";
+  
+        // app => Vue 實體
+        const app = createApp({
+          data() {
+            return {
+              products: [],
+              temp: {},
+              showModal: false,
+              token:'',
+              url: 'https://vue3-course-api.hexschool.io/v2',
+              path: 'joy-hex',
+              empty: true,
+            };
+          },
+          methods: {
+            //modal function
+            toggleModel() {
+              this.showModal = !this.showModal;
+            },
+            openModal(product) {
+              this.temp = product;
+              this.showModal = !this.showModal;
+            },
+            changeEnabled(id) {
+              this.products.forEach(item => {
+                  if (item.id === id) {
+                    item.is_enabled = !item.is_enabled;
+                  }
+              })
+            },
+            //user
+            //get cookie data
+            getTokenData() {
+                const token =  document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+                axios.defaults.headers.common['Authorization'] = token;
+            },
+            loginCheck () {
+                const url = this.url ;
+                this.getTokenData ();
+                axios.post(`${url}/api/user/check`)
+                    .then ((res) => {
+                        this.getProduct();
+                    })
+                    .catch ((err) => {
+                        window.location = 'index.html';
+                    })
+            },
+            logout() {
+                const url = this.url ;
+                this.getTokenData ();
+                axios.post(`${url}/logout`)
+                    .then((res)=>{
+                        alert(res.data.message)
+                        window.location='index.html';
+                    })
+                    .catch((err) =>{
+                        alert(err.response.data.message)
+                    })
+            },
+            //products
+            getProduct () {
+                const url = this.url;
+                const path = this.path;
+                axios.get(`${url}/api/${path}/admin/products`)
+                    .then((res) => {
+                       this.products =  res.data.products;
+                       if (this.products.length === 0) {
+                          this.empty = true;
+                       } else {
+                          this.empty = false;
+                       }
+                    })
+                    .catch((err) => {
+                        console.error(err.response);
+                })
+            },
+            deleteProduct (id) {
+              const url = this.url;
+              const path = this.path;
+              alert('是否刪除？')
+              axios.delete(`${url}/api/${path}/admin/product/${id}`)
+                    .then((res) => {
+                       this.products =  res.data.products;
+                       console.log(this.products);
+                       alert('成功刪除')
+                    })
+                    .catch((err) => {
+                      console.error(err.response);
+                })
+            }
+          },
+          mounted () {
+              this.loginCheck();
+          }
+        });
+        app.mount("#app");
+      </script>
+</body>
+</html>
